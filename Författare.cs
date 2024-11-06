@@ -8,15 +8,15 @@ using System.Text.Json;
 
 namespace Bibliotekhanterings_system_Inlamningsuppgift_3
 {
-    public class Author
+    public class Author : IIdentifiable
     {
-        public int AuthorId { get; set; }    
+        public int Id { get; set; }    
         public string Namn {  get; set; }
         public string Land {  get; set; }
 
-        public Author(int authorId, string namn, string land)
+        public Author(int id, string namn, string land)
         {
-            AuthorId = authorId;
+            Id = id;
             Namn = namn;
             Land = land;
         }

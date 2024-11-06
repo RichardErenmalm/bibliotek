@@ -10,6 +10,40 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
 {
     public class FåUserInput
     {
+        
+        public static T TaEmotThing<T>(string typAvData)
+        {
+            while (true)
+            {
+                Console.WriteLine($"Ange {typAvData}: ");
+
+                string userInput = "";
+                try
+                {
+                    userInput = Console.ReadLine();
+                }
+                catch
+                {
+                    ÅteranvändbarText.FörsökIgen("Något gick fel");
+                    continue;
+                }
+               
+                T value;
+                try
+                {
+                    value = (T)Convert.ChangeType(userInput, typeof(T));
+                    return value;
+                }
+                catch (FormatException)
+                {
+                    ÅteranvändbarText.FörsökIgen("Tänk på att använda rätt datatyp");
+                }
+                catch (Exception ex) 
+                {
+                    ÅteranvändbarText.FörsökIgen(ex.Message);
+                }
+            }
+        }
         public static int TaEmotInt(string typAvData)
         {
             while (true)

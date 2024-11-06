@@ -7,9 +7,14 @@ using System.Threading.Tasks;
 
 namespace Bibliotekhanterings_system_Inlamningsuppgift_3
 {
-    public class Bok
+    public interface IIdentifiable
     {
-        public int BokId { get; set; } 
+        int Id { get; set; }
+    }
+
+    public class Bok : IIdentifiable
+    {
+        public int Id { get; set; } 
         public string Titel { get; set; }
         public string Author{ get; set; }
         public string Genre { get; set; }
@@ -18,9 +23,9 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
         public List<int> Resensioner { get; set; }
 
         [JsonConstructor]
-        public Bok(int bokId, string titel, string author, string genre, int publishingYear, int isbn) 
+        public Bok(int id, string titel, string author, string genre, int publishingYear, int isbn) 
         { 
-            BokId = bokId;
+            Id = id;
             Titel = titel;
             Author = author;
             Genre = genre;

@@ -47,38 +47,57 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
 
         public void SparaTillDataBas()
         {
-
             try
             {
-                string json = JsonSerializer.Serialize(databas, new JsonSerializerOptions {WriteIndented = true });
-                File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LibraryData.json"), json);
+                string json = JsonSerializer.Serialize(databas, new JsonSerializerOptions { WriteIndented = true });
+
+                string projectRoot = @"C:\Users\erenm\Desktop\Systemutveckling\Skolprojekt\OOP Grundläggande\Bibliotekhanterings system Inlamningsuppgift 3\bibliotek";
+
+                string appDataPath = Path.Combine(projectRoot, "App_Data");
+
+                if (!Directory.Exists(appDataPath))
+                {
+                    Console.WriteLine("skapish");
+                    Directory.CreateDirectory(appDataPath);
+                }
+
+                string filePath = Path.Combine(appDataPath, "LibraryData.json");
+                File.WriteAllText(filePath, json);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                Console.WriteLine("Något blev fell: " + ex.Message);
+                Console.WriteLine("Något blev fel: " + ex.Message);
             }
+          
+            //try
+            //{
+            //    string json = JsonSerializer.Serialize(databas, new JsonSerializerOptions {WriteIndented = true });
+            //    File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LibraryData.json"), json);
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine("Något blev fell: " + ex.Message);
+            //}
            
         }
 
         public  void LäggTillBok()
         {
-            //ta emot användarinformation
-            int bokId = FåUserInput.TaEmotInt("ID");
+            int id = FåUserInput.TaEmotThing<int>("ID");
 
-            string titel = FåUserInput.TaEmotString("titel");
+            string titel = FåUserInput.TaEmotThing<string>("titel");
 
-            string författare = FåUserInput.TaEmotString("författare");
+            string författare = FåUserInput.TaEmotThing<string>("författare");
 
-            string genre = FåUserInput.TaEmotString("genre");
+            string genre = FåUserInput.TaEmotThing<string>("genre");
 
-            int publiceringsÅr = FåUserInput.TaEmotPubliceringsår();
+            int publiceringsÅr = FåUserInput.TaEmotThing<int>("publicerings år");
 
-            int isbn = FåUserInput.TaEmotInt("ISBN");
-
+            int isbn = FåUserInput.TaEmotThing<int>("ISBN");
 
             //skapa bok, lägg in i databas och spara till Json fil
-            Bok bok = new Bok(bokId, titel, författare, genre, publiceringsÅr, isbn);
-            databas.AllBooksFromDb.Add(bok);
+            Bok bok = new Bok(id, titel, författare, genre, publiceringsÅr, isbn);
+            databas.AllBooksFromDb.LäggTill(bok);
             SparaTillDataBas();
            
 
@@ -106,7 +125,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
 
             //skapa författare, lägg in i json fil och spara ändringar
             Author author = new Author(id, namn, land);
-            databas.AllAuthorsFromDb.Add(author);
+            databas.AllAuthorsFromDb.LäggTill(author);
             SparaTillDataBas();
 
             Console.WriteLine();
@@ -127,10 +146,11 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
             {
 
                 //låt användare välja vilken egenskap de vill ändra
-                int val = FåUserInput.TaEmotInt("Vilken information du vill ändra \n\n1. ID\n2. Titel\n3. Författare\n4. Genre\n5. Publiserings år\n6. ISBN");
+                int val = FåUserInput.TaEmotInt("Vilken information du vill ändra \n\n1. Titel\n2. Författare\n3. Genre\n4. Publiserings år\n5. ISBN");
 
-                //skapa två böcker som är referens till boken som ska ändras från author listan och bok listan
-                Bok bokIBokListan = databas.AllBooksFromDb.First(bok => bok.BokId == bokID);
+                List<Bok> bokLista = databas.AllBooksFromDb.Hämta();
+                Bok bok = bokLista.First(bok => bok.Id == bokID);
+
 
                 int ändratVärdeInt;
                 string ändratVärdeString;
@@ -138,41 +158,37 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
                 switch(val)
                 {
                     case 1:
-                        ändratVärdeInt = FåUserInput.TaEmotInt("nytt ID");
-                        bokIBokListan.BokId = ändratVärdeInt;                   
+                        ändratVärdeString = FåUserInput.TaEmotString("ny titel");
+                        bok.Titel = ändratVärdeString;
                         break;
                     case 2:
-                        ändratVärdeString = FåUserInput.TaEmotString("ny titel");
-                        bokIBokListan.Titel = ändratVärdeString;
+                        ändratVärdeString = FåUserInput.TaEmotString("ny författare");
+                        bok.Author = ändratVärdeString;
                         break;
                     case 3:
-                        ändratVärdeString = FåUserInput.TaEmotString("ny författare");
-                        bokIBokListan.Author = ändratVärdeString;
+                        ändratVärdeString = FåUserInput.TaEmotString("ny genre");
+                        bok.Genre = ändratVärdeString;
                         break;
                     case 4:
-                        ändratVärdeString = FåUserInput.TaEmotString("ny genre");
-                        bokIBokListan.Genre = ändratVärdeString;
+                        ändratVärdeInt = FåUserInput.TaEmotInt("nytt publiserings år");
+                        bok.PublishingYear = ändratVärdeInt;
                         break;
                     case 5:
-                        ändratVärdeInt = FåUserInput.TaEmotInt("nytt publiserings år");
-                        bokIBokListan.PublishingYear = ändratVärdeInt;
-                        break;
-                    case 6:
                         ändratVärdeInt = FåUserInput.TaEmotInt("nytt ISBN");
-                        bokIBokListan.Isbn = ändratVärdeInt;
+                        bok.Isbn = ändratVärdeInt;
                         break;
                     default:
                         ÅteranvändbarText.FörsökIgen("Välj mellan tillgängliga alternativ");
-                        continue;
-                          
+                        continue;   
                 }
+
+                databas.AllBooksFromDb.Ändra(bok);
                 SparaTillDataBas();
 
                 ÅteranvändbarText.GåTillbakaTillMeny("Ändringarna sparades");
                 break;
               
-            }
-           
+            }         
         }
 
         public void UppdateraFörfattardetaljer()
@@ -186,7 +202,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
             }
 
             //skapa en author som är referens till author i författarlistan som matchar id
-            Author author = databas.AllAuthorsFromDb.First(author => author.AuthorId == författarID);
+            Author author = databas.AllAuthorsFromDb.Hämta().First(author => author.Id == författarID);
 
             while (true)
             {
@@ -201,13 +217,13 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
                 {
                     case 1:
                         ändratVärdeInt = FåUserInput.TaEmotInt("nytt ID");
-                        author.AuthorId = ändratVärdeInt;
+                        author.Id = ändratVärdeInt;
                         break;
                     case 2:
                         ändratVärdeString = FåUserInput.TaEmotString("nytt namn");
 
                         string gamaltNamn = author.Namn;
-                        databas.AllBooksFromDb.ForEach(bok =>
+                        databas.AllBooksFromDb.Hämta().ForEach(bok =>
                         {
                             if (bok.Author == gamaltNamn)
                             {
@@ -242,14 +258,14 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
 
            
 
-            Bok bokAttTaBort = databas.AllBooksFromDb.First(bok => bok.BokId == id);
+            Bok bokAttTaBort = databas.AllBooksFromDb.Hämta().First(bok => bok.Id == id);
 
             //ta bort författare om boken är den sista i hans lista
-            if (databas.AllBooksFromDb.Exists(bok => bok.Author == bokAttTaBort.Author))
+            if (databas.AllBooksFromDb.Hämta().Exists(bok => bok.Author == bokAttTaBort.Author))
             {
 
-                Author author = databas.AllAuthorsFromDb.First(author => author.Namn == bokAttTaBort.Author);
-                databas.AllAuthorsFromDb.Remove(author);
+                Author author = databas.AllAuthorsFromDb.Hämta().First(author => author.Namn == bokAttTaBort.Author);
+                databas.AllAuthorsFromDb.Hämta().Remove(author);
                 ÅteranvändbarText.GåTillbakaTillMeny($"Boken är borttagen från biblioteket. (Författaren {author.Namn} togs också bort eftersom bibliotekt inte längre har några böcker av honom/henne)");
             }
             else
@@ -257,7 +273,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
                 ÅteranvändbarText.GåTillbakaTillMeny($"Boken är borttagen från biblioteket");
             }
 
-            databas.AllBooksFromDb.Remove(bokAttTaBort);
+            databas.AllBooksFromDb.Hämta().Remove(bokAttTaBort);
             SparaTillDataBas();
         }
         
@@ -273,10 +289,10 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
 
 
             //tar bort författaren från författar listan och alla böcker av författaren från boklistan
-            Author author = databas.AllAuthorsFromDb.First(författare => författare.AuthorId == id);
+            Author author = databas.AllAuthorsFromDb.Hämta().First(författare => författare.Id == id);
             ÅteranvändbarText.GåTillbakaTillMeny($"Författaren {author.Namn} och bok/böcker hen har skrivit har tagits bort från biblioteket");
-            databas.AllBooksFromDb.RemoveAll(bok => bok.Author == author.Namn);
-            databas.AllAuthorsFromDb.Remove(author);
+            databas.AllBooksFromDb.Hämta().RemoveAll(bok => bok.Author == author.Namn);
+            databas.AllAuthorsFromDb.Hämta().Remove(author);
             SparaTillDataBas();
         }
 
@@ -284,16 +300,16 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
         {
             //skriver ut alla författare i författar listan
             Console.WriteLine("Alla författare: ");
-            databas.AllAuthorsFromDb.ForEach(author =>
+            databas.AllAuthorsFromDb.Hämta().ForEach(author =>
             {
-                Console.WriteLine($"Namn: {author.Namn}, ID: {author.AuthorId}, Land: {author.Land}");
+                Console.WriteLine($"Namn: {author.Namn}, ID: {author.Id}, Land: {author.Land}");
             });
             //skriv ut alla böcker i boklistan
             Console.WriteLine();
             Console.WriteLine("Alla böcker: ");
-            databas.AllBooksFromDb.ForEach(bok =>
+            databas.AllBooksFromDb.Hämta().ForEach(bok =>
             {
-               Console.WriteLine($"Titel: {bok.Titel}, Författare: {bok.Author}, Genre: {bok.Genre}, id:{bok.BokId}, publiseringsår: {bok.PublishingYear}, isbn: {bok.Isbn}  ");
+               Console.WriteLine($"Titel: {bok.Titel}, Författare: {bok.Author}, Genre: {bok.Genre}, id:{bok.Id}, publiseringsår: {bok.PublishingYear}, isbn: {bok.Isbn}  ");
             });
             ÅteranvändbarText.GåTillbakaTillMeny("");
         }
@@ -316,7 +332,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
                 //om recensionen är mellan 1 och 5: lägg till recensionen. annars: be användaren att skriva recension mellan 1 och 5 och starta om
                 if (recension <= 5 && recension >= 1)
                 {
-                    Bok bok = databas.AllBooksFromDb.First(bok => bok.Titel == bokTitel);
+                    Bok bok = databas.AllBooksFromDb.Hämta().First(bok => bok.Titel == bokTitel);
                     bok.Resensioner.Add(recension);
 
                     SparaTillDataBas();
@@ -355,7 +371,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
 
             //Skriv ut alla böcker med recensions medelvärde över eller lika med användares angivna nummer, annars: skriv att inga böcker har medelvärde så högt
             bool finnsBokÖverInskrivnaVärdet = false;
-            databas.AllBooksFromDb.ForEach(bok =>
+            databas.AllBooksFromDb.Hämta().ForEach(bok =>
             {
 
                 if (bok.Resensioner.Average() >= recensionVärde)
@@ -381,7 +397,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
         {
             bool finnsRecensioner = false;
 
-            databas.AllBooksFromDb.ForEach(bok =>
+            databas.AllBooksFromDb.Hämta().ForEach(bok =>
             {
                 if (bok.Resensioner.Count != 0)
                 {
@@ -408,7 +424,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
             Console.WriteLine();
 
             //visa upp alla böcker i rätt genre, eller skriv ut att inga böcker i genre finns
-            List<Bok> filtreraEfterGenre = databas.AllBooksFromDb.Where(bok => bok.Genre == genre).ToList();
+            List<Bok> filtreraEfterGenre = databas.AllBooksFromDb.Hämta().Where(bok => bok.Genre == genre).ToList();
             if (filtreraEfterGenre.Count == 0)
             {
                 Console.WriteLine("Det finns ingen bok i biblioteket inom genren " + genre);
@@ -418,7 +434,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
                 Console.WriteLine($"Alla {genre} böcker:");
                 filtreraEfterGenre.ForEach(bok =>
                 {
-                    Console.WriteLine($"Titel: {bok.Titel}, Författare: {bok.Author},  id:{bok.BokId}, publiseringsår: {bok.PublishingYear}, isbn: {bok.Isbn}  ");
+                    Console.WriteLine($"Titel: {bok.Titel}, Författare: {bok.Author},  id:{bok.Id}, publiseringsår: {bok.PublishingYear}, isbn: {bok.Isbn}  ");
                 });
             }
 
@@ -430,7 +446,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
         public void SorteraBöckerEnligtFörfattare()
         {
             //skapa en ny lista som sorterar böckerna efter författares namn ordning
-            List<Bok> SorteraEnligtFörfattare = databas.AllBooksFromDb.OrderBy(bok => bok.Author).ToList();
+            List<Bok> SorteraEnligtFörfattare = databas.AllBooksFromDb.Hämta().OrderBy(bok => bok.Author).ToList();
 
             string författare = "";
             //skriv ut alla böckers egenskaper i listan. När den kommer till nästa författare: skriv ut författarens namn
@@ -442,7 +458,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
                     Console.WriteLine($"{bok.Author}");
                     författare = bok.Author;
                 }
-                Console.WriteLine($"Titel: {bok.Titel}, Författare: {bok.Author}, id:{bok.BokId}, publiseringsår: {bok.PublishingYear}, isbn: {bok.Isbn}  ");
+                Console.WriteLine($"Titel: {bok.Titel}, Författare: {bok.Author}, id:{bok.Id}, publiseringsår: {bok.PublishingYear}, isbn: {bok.Isbn}  ");
              
             });
             ÅteranvändbarText.GåTillbakaTillMeny("");
@@ -453,21 +469,21 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
         {
             ÅteranvändbarText.Header("Alla författare:");
 
-            if (databas.AllAuthorsFromDb.Count != 0)
+            if (databas.AllAuthorsFromDb.Hämta().Count != 0)
             {
-                databas.AllAuthorsFromDb.ForEach(författare =>
+                databas.AllAuthorsFromDb.Hämta().ForEach(författare =>
                 {
                     Console.WriteLine();
                     Console.WriteLine();
-                    Console.WriteLine($"Namn: {författare.Namn}, Land: {författare.AuthorId}, ID: {författare.AuthorId}");
+                    Console.WriteLine($"Namn: {författare.Namn}, Land: {författare.Land}, ID: {författare.Id}");
                     Console.WriteLine("Böcker: ");
-                    databas.AllBooksFromDb.ForEach(bok =>
+                    databas.AllBooksFromDb.Hämta().ForEach(bok =>
                     {
 
                         if (bok.Author == författare.Namn)
                         {
                            
-                            Console.Write($"Titel: {bok.Titel}, Id:{bok.BokId}, Publiseringsår: {bok.PublishingYear}, ISBN: {bok.Isbn},  Medelrecension: ");
+                            Console.Write($"Titel: {bok.Titel}, Id:{bok.Id}, Publiseringsår: {bok.PublishingYear}, ISBN: {bok.Isbn},  Medelrecension: ");
                            
                             if (bok.Resensioner.Count != 0)
                             {
@@ -492,7 +508,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
 
        public bool CheckIfAuthorExist(string checkThisAuthor)
        {
-            if (databas.AllAuthorsFromDb.Exists(author => author.Namn == checkThisAuthor))
+            if (databas.AllAuthorsFromDb.Hämta().Exists(author => author.Namn == checkThisAuthor))
             {
                 return true;
             }
@@ -504,7 +520,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
 
         public bool CheckIfAuthorIdExist(int id)
         {
-            if (databas.AllAuthorsFromDb.Exists(author => author.AuthorId == id))
+            if (databas.AllAuthorsFromDb.Hämta().Exists(author => author.Id == id))
             {
                 return true;
             }
@@ -512,7 +528,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
         }
         public bool CheckIfBookExist(string checkThisTitle)
         {
-            if (databas.AllBooksFromDb.Exists(bok => bok.Titel == checkThisTitle))
+            if (databas.AllBooksFromDb.Hämta().Exists(bok => bok.Titel == checkThisTitle))
             {
                 return true;
             }
@@ -525,7 +541,7 @@ namespace Bibliotekhanterings_system_Inlamningsuppgift_3
 
         public bool CheckIfBookIdExist(int id)
         {
-            if (databas.AllBooksFromDb.Exists(book => book.BokId == id))
+            if (databas.AllBooksFromDb.Hämta().Exists(book => book.Id == id))
             {
                 return true;
             }
